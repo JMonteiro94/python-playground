@@ -9,3 +9,5 @@ conda update conda
 conda search beautifulsoup4
 conda install beautifulsoup4
 conda list
+
+conda install -c anaconda pandas
