@@ -1,7 +1,6 @@
 import time as t
 from _thread import *
-from .game import Game
-from.chat import Chat
+from chat import Chat
 
 
 class Round(object):
@@ -59,4 +58,6 @@ class Round(object):
             self.end_round("Drawing player left")
 
     def end_round(self, msg):
+        for player in self.players:
+            player.update_score(self.player_scores[player])
         self.game.round_ended()

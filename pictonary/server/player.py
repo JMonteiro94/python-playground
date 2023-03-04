@@ -1,4 +1,3 @@
-from .game import Game
 
 
 class Player(object):

@@ -1,6 +1,5 @@
-from .player import Player
-from .board import Board
-from .round import Round
+from board import Board
+from round import Round
 import random
 
 
@@ -13,17 +12,19 @@ class Game(object):
         self.round = None
         self.board = Board()
         self.player_draw_ind = 0
+        self.round_count = 1
         self.start_new_round()
-        self.create_board()
 
     def start_new_round(self):
         round_word = self.get_word()
         self.round = Round(self.get_word(), self.players[self.player_draw_ind])
         self.player_draw_ind += 1
+        self.round_count += 1
 
         if self.player_draw_ind >= len(self.players):
             self.end_round()
             self.end_game()
+
 
     def create_board(self):
         self.board = Board()
@@ -44,6 +45,9 @@ class Game(object):
 
         if len(self.players) <= 2:
             self.end_game()
+
+    def get_player_scores(self):
+        scores = {player: player.get_score() for player in self.players}
 
     def skip(self):
         if self.round:
