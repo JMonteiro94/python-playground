@@ -7,7 +7,6 @@ class Network:
     def __init__(self, name):
         self.name = name
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.server = "localhost"
         self.port = 5500
         self.addr = (self.server, self.port)
@@ -24,18 +23,32 @@ class Network:
     def send(self, data):
         try:
             self.client.send(json.dumps(data).encode())
-            return json.loads(self.client.recv(2048).decode())
+
+            d = ""
+            while True:
+                last = self.client.recv(1024).decode()
+                d += last
+                try:
+                    if d.count(".") == 1:
+                        break
+                except:
+                    pass
+
+            try:
+                if d[-1] == ".":
+                    d = d[:-1]
+            except:
+                pass
+
+            keys = [key for key in data.keys()]
+            return json.loads(d)[str(keys[0])]
         except socket.error as e:
             self.disconnect(e)
 
     def disconnect(self, msg):
         print("[EXCEPTION] disconnected: ", msg)
-        try:
-            self.client.send({10: []})
-        except:
-            self.client.close()
         self.client.close()
 
 
 n = Network("test")
-print(n.send({0: []}))
+print(n.send({1: []}))

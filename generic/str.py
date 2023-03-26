@@ -11,6 +11,8 @@ str_split = "game,and,no".split(",")
 
 s = "How are you today?"
 s_reversed = s[::-1]
+s_reversed_2 = s[:-1]
+print(s_reversed_2)
 s_substring_1_to_9 = s[1:10]
 s_substring_0_to_end_step_2 = s[:10:2]
 substring_are_exists = "are" in s

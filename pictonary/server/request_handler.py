@@ -19,22 +19,29 @@ class Server(object):
                     data = conn.recv(1024)
                     data = json.loads(data.decode())
                     print("[LOG] Received data: ", data)
-                except:
+                except Exception as e:
+                    print(e)
                     break
-
-                keys = data.keys()
-                send_msg = {int(key): [] for key in keys}
-
+                print("1")
+                keys = [int(key) for key in data.keys()]
+                send_msg = {key: [] for key in keys}
+                print("1")
                 for key in keys:
                     if key == -1:  # get game
                         if player.game:
-                            send_msg[-1] = player.game.players
+                            send = {player.get_name(): player.get_score() for player in player.game.players}
+                            send_msg[-1] = send
+                            print("12")
                         else:
                             send_msg[-1] = []
-
+                            print("13")
+                    print("14")
                     if player.game:
+                        print("11")
                         if key == 0:  # guess
-                            correct = player.game.player_guess(player, data[0][0])
+                            print("1")
+                            print(type(data['0']))
+                            correct = player.game.player_guess(player, data['0'][0])
                             send_msg[0] = correct
                         elif key == 1:  # skip
                             skip = player.game.skip()
@@ -59,10 +66,9 @@ class Server(object):
                             send_msg[0] = skips
                         elif key == 8:  # update board
                             x, y, color = data[8][:3]
-                            self.game.update_board(x, y, color)
-                            send_msg[0] = skips
+                            player.game.update_board(x, y, color)
                         elif key == 9:  # get round time
-                            t = self.game.round.time
+                            t = player.game.round.time
                             send_msg[9] = t
 
                     if key == 10:  # disconnect
@@ -72,17 +78,18 @@ class Server(object):
 
             except Exception as e:
                 print(f"[EXCEPTION] {player.get_name()} disconnected:", e, e.args)
-                conn.close()
                 break
-        print(f"[DISCONNECT] {player.get_name()} disconnected")
+
+        print(F"[DISCONNECT] {player.get_name()} disconnected")
+        #player.game.player_disconnected(player)
         conn.close()
 
     def handle_queue(self, player):
         self.connection_queue.append(player)
-        if len(self.connection_queue) > self.PLAYERS_PER_GAME:
+        if len(self.connection_queue) >= self.PLAYERS_PER_GAME:
             game = Game(self.game_id, self.connection_queue[:])
 
-            for p in self.connection_queue:
+            for p in game.players:
                 p.set_game(game)
 
             self.game_id += 1
@@ -90,10 +97,11 @@ class Server(object):
 
     def authentication(self, conn, addr):
         try:
-            data = conn.recv(16)
+            data = conn.recv(1024)
             name = str(data.decode())
             if not name:
                 raise Exception("No name received")
+
             conn.sendall("1".encode())
 
             player = Player(addr, name)
@@ -102,7 +110,6 @@ class Server(object):
             thread.start()
         except Exception as e:
             print("[EXCEPTION] ", e)
-            conn.shutdown(socket.SHUT_RDWR)
             conn.close()
 
     def connection_thread(self):
@@ -116,7 +123,7 @@ class Server(object):
         except socket.error as e:
             str(e)
 
-        s.listen()
+        s.listen(1)
         print("waiting for a connection, server started...")
 
         while True:

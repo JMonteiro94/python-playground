@@ -10,15 +10,16 @@ class Round(object):
         self.player_drawing = player_drawing
         self.player_guessed = []
         self.skips = 0
-        self.player_scores = {player: 0 for player in players}
         self.time = 75
+        self.players = players
         self.game = game
+        self.player_scores = {player: 0 for player in self.game.players}
         self.chat = Chat(self)
         start_new_thread(self.time_thread, ())
 
     def skip(self):
         self.skips += 1
-        if self.skips > len(self.players) - 1:
+        if self.skips > len(self.game.players) - 2:
             self.skips = 0
             return True
         return False
@@ -48,6 +49,8 @@ class Round(object):
         correct = wrd == self.word
         if correct:
             self.player_guessed.append(player)
+            return True
+        return False
 
     def player_left(self, player):
         if player in self.player_scores:
@@ -55,9 +58,11 @@ class Round(object):
         if player in self.player_guessed:
             self.player_guessed.remove(player)
         if player == self.player_drawing:
+            self.chat.update_chat(f"Round has been skipped because the drawer left...")
             self.end_round("Drawing player left")
 
     def end_round(self, msg):
-        for player in self.players:
-            player.update_score(self.player_scores[player])
+        for player in self.game.players:
+            if player in self.game.players:
+                player.update_score(self.player_scores[player])
         self.game.round_ended()

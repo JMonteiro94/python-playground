@@ -11,3 +11,4 @@ conda install beautifulsoup4
 conda list
 
 conda install -c anaconda pandas
+conda install -c cogsci pygame
